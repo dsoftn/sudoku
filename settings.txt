@@ -1,4 +1,9 @@
 _win_size=800,800
-_block_size=4
+_block_size=9
 _game_size=4
-_win_color=#00ff00
+_win_color=#000000
+_lang=0
+__game_surface_zoom_level=0
+[language] win_title=Sudoku, brain game|Sudoku, igra za mozak
+[language] game_title=Sudoku|Sudoku
+[language] icon_url=https://icons8.com/icon/PnaOWYJCL0jn/stop|https://icons8.com/icon/PnaOWYJCL0jn/stop
