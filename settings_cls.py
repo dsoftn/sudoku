@@ -21,6 +21,11 @@ class Setting():
         self._game_size = 2
         self._lang_dict = {}  # Language items  key=item : value=[english,srpski]
         self._lang = 0  # Language 0=english, 1=srpski
+        self._board_font_name = "Arial"  # Font for numbers on board
+        self._board_font_size = 12  # Font size for numbers on board
+        self._board_font_color = "#000000" # Font color for numbers on board
+        self._selection_pos_x = 0  # Position of selected element (x)
+        self._selection_pos_y = 0  # Position of selected element (Y)
         # Try to load the data, if the file does not exist, load the default data.
         result = self.load_data_from_file()
         if not result:
@@ -64,7 +69,10 @@ class Setting():
         data += f"_game_size={self._game_size}\n"
         data += f"_win_color={self._win_color}\n"
         data += f"_lang={self._lang}\n"
-        data += f"__game_surface_zoom_level={self._game_surface_zoom_level}\n"
+        data += f"_game_surface_zoom_level={self._game_surface_zoom_level}\n"
+        data += f"_board_font_name={self._board_font_name}\n"
+        data += f"_board_font_color={self._board_font_color}\n"
+        
         # Load to lines_to_write all language records from settings.txt
         lines_to_write = ""
         try:
@@ -118,14 +126,8 @@ class Setting():
             split_line = line.split("=")
             # Find property name
             property_name = split_line[0].strip()
-            # Clean up value
+            # Find value
             value = split_line[1].strip()
-            allowed_chars = "0123456789,."
-            if property_name.find("color") >= 0:
-                allowed_chars += "#abcdef"
-            for char in split_line[1]:
-                if char not in allowed_chars:
-                    value.replace("char", "")
             # Add property name and value to data list
             data.append([property_name, value])
         # Then update variables if found in data list
@@ -135,54 +137,54 @@ class Setting():
         index_list = [idx for idx, value in enumerate(data) if value[0] == "_win_size"]
         if index_list:
             index = index_list[0]
-            win_size = [x.strip() for x in data[index][1].split(",") if x != ""]
-            if len(win_size) != 2:
+            _win_size = [x.strip() for x in data[index][1].split(",") if x != ""]
+            if len(_win_size) != 2:
                 missing = missing + ":_win_size"
             else:
-                if not win_size[0].isdigit() or not win_size[1].isdigit():
+                if not _win_size[0].isdigit() or not _win_size[1].isdigit():
                     missing = missing + ":_win_size"
                 else:
-                    if int(win_size[0]) < 50 or int(win_size[1]) < 50:
+                    if int(_win_size[0]) < 50 or int(_win_size[1]) < 50:
                         missing = missing + ":_win_size"
                     else:
-                        self._win_size = (int(win_size[0]), int(win_size[1]))
+                        self._win_size = (int(_win_size[0]), int(_win_size[1]))
         else:
             missing = missing + ":_win_size"
         # Setup _block_size
         index_list = [idx for idx, value in enumerate(data) if value[0] == "_block_size"]
         if index_list:
             index = index_list[0]
-            block_size = data[index][1]
-            if not block_size.isdigit():
+            _block_size = data[index][1]
+            if not _block_size.isdigit():
                 missing = missing + ":_block_size"
             else:
-                if int(block_size) not in self._allowed_block_size:
+                if int(_block_size) not in self._allowed_block_size:
                     missing = missing + ":_block_size"
                 else:
-                    self._block_size = int(block_size)
+                    self._block_size = int(_block_size)
         else:
             missing = missing + ":_block_size"
         # Setup _game_size
         index_list = [idx for idx, value in enumerate(data) if value[0] == "_game_size"]
         if index_list:
             index = index_list[0]
-            game_size = data[index][1]
-            if not game_size.isdigit():
+            _game_size = data[index][1]
+            if not _game_size.isdigit():
                 missing = missing + ":_game_size"
             else:
-                if int(game_size) not in self._allowed_game_size:
+                if int(_game_size) not in self._allowed_game_size:
                     missing = missing + ":_game_size"
                 else:
-                    self._game_size = int(game_size)
+                    self._game_size = int(_game_size)
         else:
             missing = missing + ":_game_size"
         # Setup _win_color
         index_list = [idx for idx, value in enumerate(data) if value[0] == "_win_color"]
         if index_list:
             index = index_list[0]
-            win_color = self._valid_color(data[index][1])
-            if win_color:
-                self._win_color = win_color
+            _win_color = self._valid_color(data[index][1])
+            if _win_color:
+                self._win_color = _win_color
             else:
                 missing = missing + ":_win_color"
         else:
@@ -191,11 +193,11 @@ class Setting():
         index_list = [idx for idx, value in enumerate(data) if value[0] == "_lang"]
         if index_list:
             index = index_list[0]
-            lang = data[index][1]
-            if not lang.isdigit():
+            _lang = data[index][1]
+            if not _lang.isdigit():
                 missing = missing + ":_lang"
             else:
-                self._lang = int(lang)
+                self._lang = int(_lang)
         else:
             missing = missing + ":_lang"
         # Setup _game_surface_zoom_level
@@ -212,6 +214,30 @@ class Setting():
                     self._game_surface_zoom_level = int(_game_surface_zoom_level)
         else:
             missing = missing + ":_game_surface_zoom_level"
+        # Setup _board_font_name
+        index_list = [idx for idx, value in enumerate(data) if value[0] == "_board_font_name"]
+        if index_list:
+            index = index_list[0]
+            _board_font_name = data[index][1].strip()
+            if _board_font_name:
+                self._board_font_name = _board_font_name
+            else:
+                missing = missing + "_board_font_name"
+        else:
+            missing = missing + "_board_font_name"
+        # Setup _board_font_color
+        index_list = [idx for idx, value in enumerate(data) if value[0] == "_board_font_color"]
+        if index_list:
+            index = index_list[0]
+            _board_font_color = self._valid_color(data[index][1])
+            if _board_font_color:
+                self._board_font_color = _board_font_color
+            else:
+                missing = missing + ":_board_font_color"
+        else:
+            missing = missing + ":_board_font_color"
+
+
 
         if missing:
             missing = "Missing" + missing
@@ -461,5 +487,49 @@ class Setting():
     def element_width(self) -> int:
         value = self.game_surface_height / self.elements_in_game_x
         return value
+    
+    @property
+    def board_font_name(self) -> str:
+        value = self._board_font_name
+        return value
 
+    @property
+    def board_font_size(self) -> int:
+        value = self._board_font_size
+        return value
+
+    @board_font_size.setter
+    def board_font_size(self, value: int):
+        self._board_font_size = value
+
+    @property
+    def board_font_color(self) -> str:
+        value = self._board_font_color
+        return value
+
+    @property
+    def selection_x(self) -> int:
+        value = self._selection_pos_x
+        return value
+    
+    @selection_x.setter
+    def selection_x(self, value: int):
+        if value > self.elements_in_game_x - 1:
+            value = self.elements_in_game_x -1 
+        elif value < 0:
+            value = 0
+        self._selection_pos_x = value
+
+    @property
+    def selection_y(self) -> int:
+        value = self._selection_pos_y
+        return value
+    
+    @selection_y.setter
+    def selection_y(self, value: int):
+        if value > self.elements_in_game_y - 1:
+            value = self.elements_in_game_y - 1
+        elif value < 0:
+            value = 0
+        self._selection_pos_y = value
 

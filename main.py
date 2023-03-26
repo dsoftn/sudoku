@@ -6,6 +6,17 @@ import game_gui_cls
 
 
 class SudokuGame():
+    """This is where the flow of the game and interaction with the user is controlled.
+
+    Module: game_gui_cls
+        Takes care of game display and user interface display.
+    Module: settings_cls
+        Manages the 'settings.txt' file and obtains all the data required for
+        the correct display of the game and the user interface.
+    Module: game_logic_cls
+        Creates a sudoku table and determines the number of empty fields depending on
+        the level of the game.
+    """
     def __init__(self):
         pygame.display.set_caption(stt.lang("win_title"))
         if os.path.isfile(os.curdir+"/images/sudoku.png"):
@@ -16,17 +27,21 @@ class SudokuGame():
 
     def show_table(self):
         self.gui.show_table()
+        self.gui.show_sudoku()
 
 
 
 stt = settings_cls.Setting()
 pygame.init()
+clock = pygame.time.Clock()
 
 win = pygame.display.set_mode(stt.win_size)
+pygame.key.set_repeat(500, 50)
 game = SudokuGame()
 
 run = True
 while run:
+    clock.tick(60)
     win.fill(stt.win_color)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -35,6 +50,16 @@ while run:
             keys = pygame.key.get_pressed()
             if keys[pygame.K_ESCAPE]:
                 run = False
+            elif keys[pygame.K_UP]:
+                stt.selection_y -= 1
+            elif keys[pygame.K_DOWN]:
+                stt.selection_y += 1
+            elif keys[pygame.K_LEFT]:
+                stt.selection_x -= 1
+            elif keys[pygame.K_RIGHT]:
+                stt.selection_x += 1
+
+
     game.show_table()
     pygame.display.flip()
 
