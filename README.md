@@ -2,9 +2,11 @@
 
 A well-known puzzle - Sudoku. The game is made in Python using the PyGame library.
 
+![Screenshot](./screenshot.png)
+
 ## Status
 
-The game is in the early stages of development. The expected completion time is April 10, 2023.
+The game is completed. Now in testing mode.
 
 ## Getting Started
 
