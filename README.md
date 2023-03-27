@@ -2,7 +2,7 @@
 
 A well-known puzzle - Sudoku. The game is made in Python using the PyGame library.
 
-![Screenshot](./screenshot.png)
+![Screenshot](./screenshot.jpg)
 
 ## Status
 
