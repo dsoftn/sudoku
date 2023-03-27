@@ -582,8 +582,10 @@ class Setting():
 
     @game_level.setter
     def game_level(self, value: int):
-        if value < 1 or value > 5:
+        if value < 1:
             value = 1
+        if value > 5:
+            value = 5
         self._game_level = value
 
     @property
@@ -597,6 +599,22 @@ class Setting():
             value = 12
         self._level_points = value
 
+    @property
+    def language(self) -> int:
+        """ 0 = English
+            1 = Serbian
+        """
+        return self._lang
+    
+    @language.setter
+    def language(self, value: int):
+        """ 0 = English
+            1 = Serbian
+        """
+        if value in [0, 1]:
+            self._lang = value
+            self._lang_dict = {}
+            self._load_language()
 
 
 

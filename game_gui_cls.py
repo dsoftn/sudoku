@@ -23,6 +23,7 @@ class GameGUI():
         self.btn_size6x6 = pygameButton.Button(self._win, (640, 30), 70, 40, "6x6", font_size=28)
         self.btn_new_game = pygameButton.Button(self._win, (10, 30), 200, 50, self._stt.lang("new_game"), font_size=46, bg_color="green")
         self.btn_check_sudoku = pygameButton.Button(self._win, (300, 755), 200, 40, self._stt.lang("check_sudoku"), font_size=36, bg_color="green")
+        self.btn_help = pygameButton.Button(self._win, (505, 755), 290, 40, self._stt.lang("hint"), font_size=28, bg_color="#FF0000", fg_color="#000066")
 
     def update_gui(self):
         # Find font size
@@ -53,31 +54,87 @@ class GameGUI():
             self._logic.analyze_user_input()
             self._show_correct = True
             self.btn_check_sudoku.mouse_click = False
+        if self.btn_help.mouse_click:
+            self._logic.analyze_user_input()
+            self.show_hint()
+            self._logic.analyze_user_input()
+            self._show_correct = True
+            self.btn_help.mouse_click = False
+        if self._sudoku_solved:
+            self._logic.analyze_user_input()
+            self._show_correct = True
 
     def start_new_game(self):
         self._logic.active_game = False
         self._logic.start_new_game()
 
     def draw_gui(self):
+        # Draw title image
         img_title = pygame.image.load("images/title.png")
         img_title = pygame.transform.scale(img_title, (240, 70))
         rect_title = img_title.get_rect()
         rect_title.x = 280
         rect_title.y = 25
+        self._win.blit(img_title, rect_title)
+        # Draw national flags for language change
+        img_srbija = pygame.image.load("images/flag_serbia.png")
+        img_srbija = pygame.transform.scale(img_srbija, (40, 20))
+        rect_srbija = img_srbija.get_rect()
+        rect_srbija.x = 70
+        rect_srbija.y = 770
+        self._win.blit(img_srbija, rect_srbija)
+        img_uk = pygame.image.load("images/flag_uk.png")
+        img_uk = pygame.transform.scale(img_uk, (40, 20))
+        rect_uk = img_uk.get_rect()
+        rect_uk.x = 20
+        rect_uk.y = 770
+        self._win.blit(img_uk, rect_uk)
+        # Zoom out button
         img_zoom_out = pygame.image.load("images/zoom_out.png")
         img_zoom_out = pygame.transform.scale(img_zoom_out, (50, 50))
         rect_zoom_out = img_zoom_out.get_rect()
         rect_zoom_out.x = 740
         rect_zoom_out.y = 150
-        self._win.blit(img_title, rect_title)
         self._win.blit(img_zoom_out, rect_zoom_out)
-
         # Buttons
         self.btn_new_game.draw_button()
+        self.btn_new_game.caption = self._stt.lang("new_game")
         self.btn_size6x6.draw_button()
         self.btn_size9x9.draw_button()
         self.btn_check_sudoku.draw_button()
-
+        self.btn_check_sudoku.caption = self._stt.lang("check_sudoku")
+        if self._show_correct:
+            self.btn_help.draw_button()
+        self.btn_help.caption = self._stt.lang("hint")
+        # Level
+        font = pygame.font.SysFont("Comic Sans MS", 40)
+        text = font.render(self._stt.lang("level_msg"), 1, "blue")
+        self._win.blit(text, (710, 400))
+        font = pygame.font.SysFont("Comic Sans MS", 60)
+        if self._stt.game_level == 1:
+            color = "green"
+        elif self._stt.game_level == 2:
+            color = "#B2FF66"
+        elif self._stt.game_level == 3:
+            color = "yellow"
+        elif self._stt.game_level == 4:
+            color = "#AE4343"
+        elif self._stt.game_level == 5:
+            color = "red"
+        text = font.render(str(self._stt.game_level), 1, color)
+        self._win.blit(text, (735, 440))
+        img_level_up = pygame.image.load("images/level_up.png")
+        img_level_up = pygame.transform.scale(img_level_up, (60, 60))
+        rect_level_up = img_zoom_out.get_rect()
+        rect_level_up.x = 720
+        rect_level_up.y = 330
+        self._win.blit(img_level_up, rect_level_up)
+        img_level_down = pygame.image.load("images/level_down.png")
+        img_level_down = pygame.transform.scale(img_level_down, (60, 60))
+        rect_level_down = img_zoom_out.get_rect()
+        rect_level_down.x = 720
+        rect_level_down.y = 530
+        self._win.blit(img_level_down, rect_level_down)
         # If user is solved sudoku 
         if self._sudoku_solved:
             font = pygame.font.SysFont("Comic Sans MS", 40)
@@ -90,65 +147,109 @@ class GameGUI():
             rect_end.y = 250
             self._win.blit(img_end, rect_end)
 
-
     def mouse_event_handler(self, event):
         mouse_pos = pygame.mouse.get_pos()
         x_mouse = mouse_pos[0]
         y_mouse = mouse_pos[1]
     
         if event.type == pygame.MOUSEBUTTONDOWN:
+            # Change selected cell
             if x_mouse > self._stt.board_surface_pos_x and x_mouse < self._stt.board_surface_pos_x + self._stt.board_surface_width:
                 if y_mouse > self._stt.board_surface_pos_y and y_mouse < self._stt.board_surface_pos_y + self._stt.board_surface_height:
                     x_mouse = x_mouse - self._stt.board_surface_pos_x
                     y_mouse = y_mouse - self._stt.board_surface_pos_y
                     self._stt.selection_x = int(x_mouse / self._stt.element_width)
                     self._stt.selection_y = int(y_mouse / self._stt.element_height)
+            # Zoom clicked
             if x_mouse > 739 and x_mouse < 791 and y_mouse > 149 and y_mouse < 191:
                 self._stt.game_surface_zoom_level += 1
+            # Level UP clicked
+            if x_mouse > 719 and x_mouse < 781 and y_mouse > 329 and y_mouse < 391:
+                self._stt.game_level += 1
+            # Level DOWN clicked
+            if x_mouse > 719 and x_mouse < 781 and y_mouse > 529 and y_mouse < 591:
+                self._stt.game_level -= 1
+            # English flag clicked
+            if x_mouse > 19 and x_mouse < 61 and y_mouse > 769 and y_mouse < 791:
+                self._stt.language = 0
+            # Serbian flag clicked
+            if x_mouse > 69 and x_mouse < 111 and y_mouse > 769 and y_mouse < 791:
+                self._stt.language = 1
 
         # Events for buttons
         self.btn_new_game.event_handler(event)
         self.btn_size6x6.event_handler(event)
         self.btn_size9x9.event_handler(event)
         self.btn_check_sudoku.event_handler(event)
+        if self._show_correct:
+            self.btn_help.event_handler(event)
                 
 
 
     def key_event_handler(self, keys):
-        if keys[pygame.K_0] or keys[pygame.K_DELETE]:
+        if keys[pygame.K_0] or keys[pygame.K_DELETE] or keys[pygame.K_KP_0]:
             self._logic.set_cell_val(self._stt.selection_x, self._stt.selection_y, 0)
             self._sudoku_solved = self._logic.check_sudoku_is_user_solved()
-        elif keys[pygame.K_1]:
+        elif keys[pygame.K_1] or keys[pygame.K_KP_1]:
             self._logic.set_cell_val(self._stt.selection_x, self._stt.selection_y, 1)
             self._sudoku_solved = self._logic.check_sudoku_is_user_solved()
-        elif keys[pygame.K_2]:
+        elif keys[pygame.K_2] or keys[pygame.K_KP_2]:
             self._logic.set_cell_val(self._stt.selection_x, self._stt.selection_y, 2)
             self._sudoku_solved = self._logic.check_sudoku_is_user_solved()
-        elif keys[pygame.K_3]:
+        elif keys[pygame.K_3] or keys[pygame.K_KP_3]:
             self._logic.set_cell_val(self._stt.selection_x, self._stt.selection_y, 3)
             self._sudoku_solved = self._logic.check_sudoku_is_user_solved()
-        elif keys[pygame.K_4]:
+        elif keys[pygame.K_4] or keys[pygame.K_KP_4]:
             self._logic.set_cell_val(self._stt.selection_x, self._stt.selection_y, 4)
             self._sudoku_solved = self._logic.check_sudoku_is_user_solved()
-        elif keys[pygame.K_5]:
+        elif keys[pygame.K_5] or keys[pygame.K_KP_5]:
             self._logic.set_cell_val(self._stt.selection_x, self._stt.selection_y, 5)
             self._sudoku_solved = self._logic.check_sudoku_is_user_solved()
-        elif keys[pygame.K_6]:
+        elif keys[pygame.K_6] or keys[pygame.K_KP_6]:
             self._logic.set_cell_val(self._stt.selection_x, self._stt.selection_y, 6)
             self._sudoku_solved = self._logic.check_sudoku_is_user_solved()
-        elif keys[pygame.K_7]:
+        elif keys[pygame.K_7] or keys[pygame.K_KP_7]:
             self._logic.set_cell_val(self._stt.selection_x, self._stt.selection_y, 7)
             self._sudoku_solved = self._logic.check_sudoku_is_user_solved()
-        elif keys[pygame.K_8]:
+        elif keys[pygame.K_8] or keys[pygame.K_KP_8]:
             self._logic.set_cell_val(self._stt.selection_x, self._stt.selection_y, 8)
             self._sudoku_solved = self._logic.check_sudoku_is_user_solved()
-        elif keys[pygame.K_9]:
+        elif keys[pygame.K_9] or keys[pygame.K_KP_9]:
             self._logic.set_cell_val(self._stt.selection_x, self._stt.selection_y, 9)
             self._sudoku_solved = self._logic.check_sudoku_is_user_solved()
-
-        if keys[pygame.KSCAN_SPACE]:
+        elif keys[pygame.K_SPACE]:
             self._logic.analyze_user_input()
             self._show_correct = True
+    
+    def show_hint(self):
+        wait_ms = 150
+        stt = self._stt
+        cell = self._logic.user_hint()
+        # If cell not found abort function
+        if not cell:
+            return
+        cell_x = cell[0]
+        cell_y = cell[1]
+        cell_val = cell[2]
+        # Go to cell
+        while stt.selection_x != cell_x or stt.selection_y != cell_y:
+            pygame.time.wait(wait_ms)
+            if stt.selection_x < cell_x:
+                stt.selection_x += 1
+            elif stt.selection_x > cell_x:
+                stt.selection_x -= 1
+            elif stt.selection_y < cell_y:
+                stt.selection_y += 1
+            elif stt.selection_y > cell_y:
+                stt.selection_y -= 1
+            self.show_table()
+            self.show_sudoku()
+            self.draw_gui()
+            pygame.display.flip()
+        # Write correct value into cell
+        pygame.time.wait(wait_ms)
+        self._logic.set_cell_val(cell_x, cell_y, cell_val)
+        self._sudoku_solved = self._logic.check_sudoku_is_user_solved()
     
     def show_table(self, show_correct: bool = False):
         win = self._win

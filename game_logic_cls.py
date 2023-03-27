@@ -28,13 +28,142 @@ class SudokuGameLogic():
         """
         self.active_game = True
         is_solved = False
+        count_try = 0
         while not is_solved:
             self._create_empty_board()
             self._create_new_sudoku()
             self._empty_user_cells()
             is_solved = self._solve_sudoku()
+            count_try += 1
+            if count_try % 30 == 0:
+                self._stt.game_level -= 1
 
+    def _restore_table_to_created(self):
+        """Restores self._board to self.solved_board
+        When 'solve sudoku' did not find a solution, then we make empty cells
+        again with a different layout. This function resets user cells and
+        returns everything to default solved cell.
+        """
+        count = 0
+        for y in range(0, self._stt.elements_in_game_y):
+            for x in range(0, self._stt.elements_in_game_x):
+                self._board[y][x] = [self._solved_board[count], True, False, False]
 
+    def user_hint(self) -> tuple:
+        """This function return cell that has to be changed.
+        Returns (hint_x, hint_y, hint_val) (tuple)
+            hint_x, hint_y = cell position
+            hint_val = value to write in cell
+        """
+        stt = self._stt
+        # Get table with solution
+        table = self._solved_board
+        # Define hint_x,hint_y position where to go and changed value - hint_val
+        hint_x = 0
+        hint_y = 0
+        hint_val = 0
+        # Check all bad entries from user and return one that needs to be changed
+        count = 0
+        for y in range(0, stt.elements_in_game_y):
+            for x in range(0, stt.elements_in_game_x):
+                cell_val = self._get_cell_val(x, y)
+                if cell_val != table[count] and cell_val != 0:
+                    return (x, y, 0)
+                count += 1
+        # Search for value hint and return it
+        # First search for simple case where you look only one cell
+        has_improved = False
+        for y in range(0, stt.elements_in_game_y):
+            if has_improved:
+                break
+            for x in range(0, stt.elements_in_game_x):
+                if has_improved:
+                    break
+                if self._board[y][x][1] is True or self._board[y][x][0] != 0:
+                    continue
+                # Check is there cell with only 1 solution
+                solutions = self._available_vals(x,y)
+                if len(solutions) == 1:
+                    hint_x = x
+                    hint_y = y
+                    hint_val = solutions[0]
+                    has_improved = True
+        # If we found cell then return it, else perform more complex search
+        if has_improved:
+            return (hint_x, hint_y, hint_val)
+        # Now preform complex search
+        # Check row
+        for y in range(0, stt.elements_in_game_y):
+            if has_improved:
+                break
+            for x in range(0, stt.elements_in_game_x):
+                if has_improved:
+                    break
+                if self._board[y][x][1] is True or self._board[y][x][0] != 0:
+                    continue
+                values = []
+                solutions = self._available_vals(x,y)
+                for x1 in range(0, stt.elements_in_game_x):
+                    if x != x1:
+                        if self._get_cell_val(x1, y) == 0:
+                            values = values + self._available_vals(x1, y)
+                for solution in solutions:
+                    if solution not in values:
+                        hint_x = x
+                        hint_y = y
+                        hint_val = solution
+                        has_improved = True
+        # If we found cell then return it, else search more
+        if has_improved:
+            return (hint_x, hint_y, hint_val)
+        # Search columns
+        for y in range(0, stt.elements_in_game_y):
+            if has_improved:
+                break
+            for x in range(0, stt.elements_in_game_x):
+                if has_improved:
+                    break
+                if self._board[y][x][1] is True or self._board[y][x][0] != 0:
+                    continue
+                values = []
+                solutions = self._available_vals(x,y)
+                for y1 in range(0, stt.elements_in_game_y):
+                    if y != y1:
+                        if self._get_cell_val(x, y1) == 0:
+                            values = values + self._available_vals(x, y1)
+                for solution in solutions:
+                    if solution not in values:
+                        hint_x = x
+                        hint_y = y
+                        hint_val = solution
+                        has_improved = True
+        # If we found cell then return it, else search more
+        if has_improved:
+            return (hint_x, hint_y, hint_val)
+        # Search block
+        for y in range(0, stt.elements_in_game_y):
+            if has_improved:
+                break
+            for x in range(0, stt.elements_in_game_x):
+                if has_improved:
+                    break
+                if self._board[y][x][1] is True or self._board[y][x][0] != 0:
+                    continue
+                solutions = self._available_vals(x,y)
+                values = self._find_all_block_values_for_solve_sudoku(x, y)
+                for solution in solutions:
+                    if solution not in values:
+                        hint_x = x
+                        hint_y = y
+                        hint_val = solution
+                        has_improved = True
+        # This was the last step and the solution should be found.
+        if has_improved:
+            return (hint_x, hint_y, hint_val)
+        # In case the solution is not found, this code has a bug, so return None
+        # da_li_je_resiv = self._solve_sudoku(leave = True)
+        return None
+    
     def analyze_user_input(self):
         for y in range(0, self._stt.elements_in_game_y):
             for x in range(0, self._stt.elements_in_game_x):
@@ -70,6 +199,7 @@ class SudokuGameLogic():
         elements_x = self._stt.elements_in_game_x
         elements_y = self._stt.elements_in_game_y
         self._board = []
+        self._solved_board = []
         for y in range(0, elements_y):
             x_list = []
             for x in range(0, elements_x):
@@ -152,9 +282,7 @@ class SudokuGameLogic():
                         if allowed_list:
                             index = random.randint(0, len(allowed_list) - 1)
                             self._set_cell_val(x, y, allowed_list[index], predefinded=True)
-                            # print (allowed_list, " NUMBER: ", allowed_list[index], " AT ", x, y)
                         else:
-                            # print ("STOP: ", x, y, allowed_list)
                             start_over = True
                 if start_over:
                     start_over = False
@@ -166,7 +294,7 @@ class SudokuGameLogic():
         self._solved_board = []
         for y in range(0, stt.elements_in_game_y):
             for x in range(0, stt.elements_in_game_x):
-                self._solved_board.append(self._board[x][y][0])
+                self._solved_board.append(self._board[y][x][0])
        
     def _empty_user_cells(self):
         stt = self._stt        
@@ -175,14 +303,15 @@ class SudokuGameLogic():
         # Maximum of predefined cells
         user_cells_count  = stt.elements_in_game_x * stt.elements_in_game_y
         user_cells_count = int(user_cells_count * stt.game_level * stt.level_points / 100)
-        while count < user_cells_count:
-            x = random.randint(0, stt.elements_in_game_x - 1)
-            y = random.randint(0, stt.elements_in_game_y - 1)
-            if self._get_cell_val(x, y) != 0:
-                self._set_cell_val(x, y, 0, False, False, False)
-                count += 1
-        
-    def _solve_sudoku(self):
+        pos = []
+        for x in range(0, stt.elements_in_game_x):
+            for y in range(0, stt.elements_in_game_y):
+                pos.append((x, y))
+        random.shuffle(pos)
+        for i in range(0, user_cells_count):
+            self._set_cell_val(pos[i][0], pos[i][1], 0, False, False, False)
+
+    def _solve_sudoku(self) -> bool:
         stt = self._stt
         # Backup original table
         table = []
@@ -198,7 +327,7 @@ class SudokuGameLogic():
             # Walk through all cells
             for y in range(0, stt.elements_in_game_y):
                 for x in range(0, stt.elements_in_game_x):
-                    if self._board[y][x][1]:
+                    if self._board[y][x][1] is True or self._board[y][x][0] != 0:
                         continue
                     # Check is there cell with only 1 solution
                     solutions = self._available_vals(x,y)
@@ -207,37 +336,34 @@ class SudokuGameLogic():
                         has_improved = True
                     # Check is there unique value for this cell in row, col or block
                     # Check row
-                    if not has_improved:
-                        values = []
-                        for x1 in range(0, stt.elements_in_game_x):
-                            if x != x1:
-                                if self._get_cell_val(x1, y) == 0:
-                                    values = values + self._available_vals(x1, y)
-                        for solution in solutions:
-                            if solution not in values:
-                                self._set_cell_val(x, y, solution)
-                                has_improved = True
-                                break
+                    values = []
+                    for x1 in range(0, stt.elements_in_game_x):
+                        if x != x1:
+                            if self._get_cell_val(x1, y) == 0:
+                                values = values + self._available_vals(x1, y)
+                    for solution in solutions:
+                        if solution not in values:
+                            self._set_cell_val(x, y, solution)
+                            has_improved = True
+                            break
                     # Check column
-                    if not has_improved:
-                        values = []
-                        for y1 in range(0, stt.elements_in_game_y):
-                            if y != y1:
-                                if self._get_cell_val(x, y1) == 0:
-                                    values = values + self._available_vals(x, y1)
-                        for solution in solutions:
-                            if solution not in values:
-                                self._set_cell_val(x, y, solution)
-                                has_improved = True
-                                break
+                    values = []
+                    for y1 in range(0, stt.elements_in_game_y):
+                        if y != y1:
+                            if self._get_cell_val(x, y1) == 0:
+                                values = values + self._available_vals(x, y1)
+                    for solution in solutions:
+                        if solution not in values:
+                            self._set_cell_val(x, y, solution)
+                            has_improved = True
+                            break
                     # Check block
-                    if not has_improved:
-                        values = self._find_all_block_values_for_solve_sudoku(x, y)
-                        for solution in solutions:
-                            if solution not in values:
-                                self._set_cell_val(x, y, solution)
-                                has_improved = True
-                                break
+                    values = self._find_all_block_values_for_solve_sudoku(x, y)
+                    for solution in solutions:
+                        if solution not in values:
+                            self._set_cell_val(x, y, solution)
+                            has_improved = True
+                            break
             is_solved = self._is_sudoku_valid()
             if is_solved:
                 break
@@ -256,24 +382,25 @@ class SudokuGameLogic():
         start_pos_y = int(y / self._stt.elements_in_block_y) * self._stt.elements_in_block_y
         for pos_y in range(start_pos_y, start_pos_y + self._stt.elements_in_block_y):
             for pos_x in range(start_pos_x, start_pos_x + self._stt.elements_in_block_x):
-                if self._board[pos_y][pos_x][0] == 0 and pos_y != y and pos_x != x:
-                    vals_b = vals_b + self._available_vals(pos_x, pos_y)
+                if self._board[pos_y][pos_x][0] == 0:
+                    if pos_y != y or pos_x != x:
+                        vals_b = vals_b + self._available_vals(pos_x, pos_y)
         return vals_b
 
 
     def _is_sudoku_valid(self):
         result = True
-        for y in range(0, self._stt.elements_in_block_y):
-            for x in range(0, self._stt.elements_in_block_x):
+        for y in range(0, self._stt.elements_in_game_y):
+            for x in range(0, self._stt.elements_in_game_x):
                 cell = self._get_cell_val(x, y)
                 vals = self._available_vals(x, y)
                 if cell == 0:
                     result = False
-                if vals:
+                if len(vals) != 1:
+                    result = False
+                else:
                     if cell != vals[0]:
                         result = False
-                else:
-                    result = False
         return result
 
 
