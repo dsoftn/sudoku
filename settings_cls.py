@@ -8,8 +8,8 @@ class Setting():
             _game_size = Number of blocks in game (1, 2, 4, 6, 9)            
         """
         # Internal variables 
-        self._allowed_block_size = [4, 6, 9]
-        self._allowed_game_size = [1, 2, 4, 6, 9]
+        self._allowed_block_size = [6, 9]
+        self._allowed_game_size = [6, 9]
         self._game_surface_padding_top = 150
         self._game_surface_padding_bottom = 50
         self._game_surface_zoom_level = 0  # Zoom 0-5  0=max zoom (default)
@@ -26,6 +26,8 @@ class Setting():
         self._board_font_color = "#000000" # Font color for numbers on board
         self._selection_pos_x = 0  # Position of selected element (x)
         self._selection_pos_y = 0  # Position of selected element (Y)
+        self._game_level = 1  # Level of game (1 - easy ... 5 - Very Hard)
+        self._level_points = 12  # Percent of empty cells, lvl*points = 1x12 = 12% of empty cells  (5-16)
         # Try to load the data, if the file does not exist, load the default data.
         result = self.load_data_from_file()
         if not result:
@@ -72,7 +74,8 @@ class Setting():
         data += f"_game_surface_zoom_level={self._game_surface_zoom_level}\n"
         data += f"_board_font_name={self._board_font_name}\n"
         data += f"_board_font_color={self._board_font_color}\n"
-        
+        data += f"_game_level={self._game_level}\n"
+        data += f"_level_points={self._level_points}\n"
         # Load to lines_to_write all language records from settings.txt
         lines_to_write = ""
         try:
@@ -236,8 +239,34 @@ class Setting():
                 missing = missing + ":_board_font_color"
         else:
             missing = missing + ":_board_font_color"
-
-
+        # Setup _game_level  1-5
+        index_list = [idx for idx, value in enumerate(data) if value[0] == "_game_level"]
+        if index_list:
+            index = index_list[0]
+            _game_level = data[index][1]
+            if not _game_level.isdigit():
+                missing = missing + ":_game_level"
+            else:
+                if int(_game_level) < 1 or int(_game_level) > 5:
+                    missing = missing +":_game_level"
+                else:
+                    self._game_level = int(_game_level)
+        else:
+            missing = missing + ":_game_level"
+        # Setup _level_points  5-16
+        index_list = [idx for idx, value in enumerate(data) if value[0] == "_level_points"]
+        if index_list:
+            index = index_list[0]
+            _level_points = data[index][1]
+            if not _level_points.isdigit():
+                missing = missing + ":_level_points"
+            else:
+                if int(_level_points) < 5 or int(_level_points) > 16:
+                    missing = missing +":_level_points"
+                else:
+                    self._level_points = int(_level_points)
+        else:
+            missing = missing + ":_level_points"
 
         if missing:
             missing = "Missing" + missing
@@ -338,6 +367,7 @@ class Setting():
         if value not in self._allowed_block_size:
             raise ValueError(f"Block size can be only values {self._allowed_block_size}")
         self._block_size = value
+        self._game_size = value
 
     @property
     def game_size(self) -> int:
@@ -350,6 +380,7 @@ class Setting():
         if value not in self._allowed_game_size:
             raise ValueError(f"Game size can only be values {self._allowed_game_size}")
         self._game_size = value
+        self._block_size = value
 
     @property
     def win_color(self) -> str:
@@ -398,7 +429,7 @@ class Setting():
         elif self._game_size == 4:
             blocks = 2
         elif self._game_size == 6:
-            blocks = 3
+            blocks = 2
         elif self._game_size == 9:
             blocks = 3
         return blocks
@@ -413,7 +444,7 @@ class Setting():
         elif self._game_size == 4:
             blocks = 2
         elif self._game_size == 6:
-            blocks = 2
+            blocks = 3
         elif self._game_size == 9:
             blocks = 3
         return blocks
@@ -532,4 +563,40 @@ class Setting():
         elif value < 0:
             value = 0
         self._selection_pos_y = value
+
+    @property
+    def game_surface_zoom_level(self) -> int:
+        value = self._game_surface_zoom_level
+        return value
+    
+    @game_surface_zoom_level.setter
+    def game_surface_zoom_level(self, value: int):
+        if value < 0 or value > 5:
+            value = 0
+        self._game_surface_zoom_level = value
+
+    @property
+    def game_level(self) -> int:
+        value = self._game_level
+        return value
+
+    @game_level.setter
+    def game_level(self, value: int):
+        if value < 1 or value > 5:
+            value = 1
+        self._game_level = value
+
+    @property
+    def level_points(self) -> int:
+        value = self._level_points
+        return value
+
+    @level_points.setter
+    def level_points(self, value: int):
+        if value < 5 or value > 16:
+            value = 12
+        self._level_points = value
+
+
+
 

@@ -23,11 +23,32 @@ class SudokuGame():
             pygame.display.set_icon(pygame.image.load("images/sudoku.png"))
         
         self.gui = game_gui_cls.GameGUI(win, stt)
-        
 
     def show_table(self):
-        self.gui.show_table()
-        self.gui.show_sudoku()
+        self.gui.update_gui()
+
+    def event_handler(self, event):
+        keys = pygame.key.get_pressed()
+        if event.type == pygame.KEYDOWN:
+            self.gui.key_event_handler(keys)
+        if event.type in (pygame.MOUSEMOTION, pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN):
+            self.gui.mouse_event_handler(event)
+        
+        if event.type == pygame.KEYDOWN:
+            keys = pygame.key.get_pressed()
+            self.gui._show_correct = False
+            if keys[pygame.K_UP]:
+                stt.selection_y -= 1
+            elif keys[pygame.K_DOWN]:
+                stt.selection_y += 1
+            elif keys[pygame.K_LEFT]:
+                stt.selection_x -= 1
+            elif keys[pygame.K_RIGHT]:
+                stt.selection_x += 1
+            elif keys[pygame.K_PAGEUP]:
+                stt.game_surface_zoom_level += 1
+            elif keys[pygame.K_PAGEDOWN]:
+                stt.game_surface_zoom_level -= 1
 
 
 
@@ -41,23 +62,13 @@ game = SudokuGame()
 
 run = True
 while run:
-    clock.tick(60)
+    clock.tick(30)
     win.fill(stt.win_color)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
-        elif event.type == pygame.KEYDOWN:
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_ESCAPE]:
-                run = False
-            elif keys[pygame.K_UP]:
-                stt.selection_y -= 1
-            elif keys[pygame.K_DOWN]:
-                stt.selection_y += 1
-            elif keys[pygame.K_LEFT]:
-                stt.selection_x -= 1
-            elif keys[pygame.K_RIGHT]:
-                stt.selection_x += 1
+        game.event_handler(event)
+        
 
 
     game.show_table()
