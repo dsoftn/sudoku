@@ -26,8 +26,13 @@ class Setting():
         self._board_font_color = "#000000" # Font color for numbers on board
         self._selection_pos_x = 0  # Position of selected element (x)
         self._selection_pos_y = 0  # Position of selected element (Y)
-        self._game_level = 1  # Level of game (1 - easy ... 5 - Very Hard)
+        self._game_level = 3  # Level of game (1 - easy ... 5 - Very Hard)
         self._level_points = 12  # Percent of empty cells, lvl*points = 1x12 = 12% of empty cells  (5-16)
+        self._delimiter_line_thicknes = 4  # Thicknes of line that delimit game blocks
+        self._scale_delimiter_lines_x = 0  # Moves lines that delimits blocks by value
+        self._scale_delimiter_lines_y = 0  # Moves lines that delimits blocks by value
+        self._delimiter_line_color = "#00ff00"  # Color of lines that delimit blocks
+        self._hint_animation_speed = 150  # Hint animation speed in miliseconds
         # Try to load the data, if the file does not exist, load the default data.
         result = self.load_data_from_file()
         if not result:
@@ -61,21 +66,28 @@ class Setting():
         except FileNotFoundError:
             return False
     
-    def save_data_to_file(self) -> str:
+    def save_data_to_file(self, write_default_data: bool = False) -> str:
         """Saves setting to 'settings.txt' file.
         """
         # Add to data string all settings
         data = ""
-        data += f"_win_size={self._win_size[0]},{self._win_size[1]}\n"
-        data += f"_block_size={self._block_size}\n"
-        data += f"_game_size={self._game_size}\n"
-        data += f"_win_color={self._win_color}\n"
-        data += f"_lang={self._lang}\n"
-        data += f"_game_surface_zoom_level={self._game_surface_zoom_level}\n"
-        data += f"_board_font_name={self._board_font_name}\n"
-        data += f"_board_font_color={self._board_font_color}\n"
-        data += f"_game_level={self._game_level}\n"
-        data += f"_level_points={self._level_points}\n"
+        if not write_default_data:
+            data += f"_win_size={self._win_size[0]},{self._win_size[1]}\n"
+            data += f"_block_size={self._block_size}\n"
+            data += f"_game_size={self._game_size}\n"
+            data += f"_win_color={self._win_color}\n"
+            data += f"_lang={self._lang}\n"
+            data += f"_game_surface_zoom_level={self._game_surface_zoom_level}\n"
+            data += f"_board_font_name={self._board_font_name}\n"
+            data += f"_board_font_color={self._board_font_color}\n"
+            data += f"_game_level={self._game_level}\n"
+            data += f"_level_points={self._level_points}\n"
+            data += f"_delimiter_line_thicknes={self._delimiter_line_thicknes}\n"
+            data += f"_scale_delimiter_lines_x={self._scale_delimiter_lines_x}\n"
+            data += f"_scale_delimiter_lines_y={self._scale_delimiter_lines_y}\n"
+            data += f"_delimiter_line_color={self._delimiter_line_color}\n"
+            data += f"_hint_animation_speed={self._hint_animation_speed}\n"
+
         # Load to lines_to_write all language records from settings.txt
         lines_to_write = ""
         try:
@@ -267,6 +279,76 @@ class Setting():
                     self._level_points = int(_level_points)
         else:
             missing = missing + ":_level_points"
+        # Setup _delimiter_line_thicknes
+        index_list = [idx for idx, value in enumerate(data) if value[0] == "_delimiter_line_thicknes"]
+        if index_list:
+            index = index_list[0]
+            _delimiter_line_thicknes = data[index][1]
+            if not _delimiter_line_thicknes.isdigit():
+                missing = missing + ":_delimiter_line_thicknes"
+            else:
+                if int(_delimiter_line_thicknes) < 0 or int(_delimiter_line_thicknes) > 100:
+                    missing = missing +":_delimiter_line_thicknes"
+                else:
+                    self._delimiter_line_thicknes = int(_delimiter_line_thicknes)
+        else:
+            missing = missing + ":_delimiter_line_thicknes"
+        # Setup _scale_delimiter_lines_x
+        index_list = [idx for idx, value in enumerate(data) if value[0] == "_scale_delimiter_lines_x"]
+        if index_list:
+            index = index_list[0]
+            _scale_delimiter_lines_x = data[index][1]
+            tmp = _scale_delimiter_lines_x.strip("-")
+            if not tmp.isdigit():
+                missing = missing + ":_scale_delimiter_lines_x"
+            else:
+                if int(_scale_delimiter_lines_x) < -100 or int(_scale_delimiter_lines_x) > 100:
+                    missing = missing +":_scale_delimiter_lines_x"
+                else:
+                    self._scale_delimiter_lines_x = int(_scale_delimiter_lines_x)
+        else:
+            missing = missing + ":_scale_delimiter_lines_x"
+        # Setup _scale_delimiter_lines_y
+        index_list = [idx for idx, value in enumerate(data) if value[0] == "_scale_delimiter_lines_y"]
+        if index_list:
+            index = index_list[0]
+            _scale_delimiter_lines_y = data[index][1]
+            tmp = _scale_delimiter_lines_y.strip("-")
+            if not tmp.isdigit():
+                missing = missing + ":_scale_delimiter_lines_y"
+            else:
+                if int(_scale_delimiter_lines_y) < -100 or int(_scale_delimiter_lines_y) > 100:
+                    missing = missing +":_scale_delimiter_lines_y"
+                else:
+                    self._scale_delimiter_lines_y = int(_scale_delimiter_lines_y)
+        else:
+            missing = missing + ":_scale_delimiter_lines_y"
+        # Setup _delimiter_line_color
+        index_list = [idx for idx, value in enumerate(data) if value[0] == "_delimiter_line_color"]
+        if index_list:
+            index = index_list[0]
+            _delimiter_line_color = self._valid_color(data[index][1])
+            if _delimiter_line_color:
+                self._delimiter_line_color = _delimiter_line_color
+            else:
+                missing = missing + ":_delimiter_line_color"
+        else:
+            missing = missing + ":_delimiter_line_color"
+        # Setup _hint_animation_speed
+        index_list = [idx for idx, value in enumerate(data) if value[0] == "_hint_animation_speed"]
+        if index_list:
+            index = index_list[0]
+            _hint_animation_speed = data[index][1]
+            if not _hint_animation_speed.isdigit():
+                missing = missing + ":_hint_animation_speed"
+            else:
+                if int(_hint_animation_speed) < 0 or int(_hint_animation_speed) > 10000:
+                    missing = missing +":_hint_animation_speed"
+                else:
+                    self._hint_animation_speed = int(_hint_animation_speed)
+        else:
+            missing = missing + ":_hint_animation_speed"
+
 
         if missing:
             missing = "Missing" + missing
@@ -348,7 +430,7 @@ class Setting():
     
     @win_size.setter
     def win_size(self, value: tuple):
-        if not isinstance(value, tuple) or not isinstance(value, list):
+        if not isinstance(value, tuple) and not isinstance(value, list):
             raise TypeError("Window size must be tuple or list with exactly 2 elements")
         if len(value) != 2:
             raise ValueError("Window size: Tuple or list must have exactly 2 elements")
@@ -523,6 +605,10 @@ class Setting():
     def board_font_name(self) -> str:
         value = self._board_font_name
         return value
+    
+    @board_font_name.setter
+    def board_font_name(self, value: str):
+        self._board_font_name = value
 
     @property
     def board_font_size(self) -> int:
@@ -537,6 +623,17 @@ class Setting():
     def board_font_color(self) -> str:
         value = self._board_font_color
         return value
+    
+    @board_font_color.setter
+    def board_font_color(self, value: str):
+        if not isinstance(value, str):
+            raise TypeError("Color value must be string in HEX format (#XXXXXX) or RGB(XXX,XXX,XXX)")
+
+        color = self._valid_color(value)
+        if color:
+            self._board_font_color = color
+        else:
+            raise ValueError("Color must have a value in HEX format (#XXXXXX) or RGB(XXX,XXX,XXX)")
 
     @property
     def selection_x(self) -> int:
@@ -616,5 +713,172 @@ class Setting():
             self._lang_dict = {}
             self._load_language()
 
+    @property
+    def delimiter_line_thicknes(self) -> int:
+        value = self._delimiter_line_thicknes
+        return value
 
+    @delimiter_line_thicknes.setter
+    def delimiter_line_thicknes(self, value: int):
+        if value < 0 or value > 100:
+            value = 4
+        self._delimiter_line_thicknes = value
+
+    @property
+    def scale_delimiter_lines_x(self) -> int:
+        value = self._scale_delimiter_lines_x
+        return value
+
+    @scale_delimiter_lines_x.setter
+    def scale_delimiter_lines_x(self, value: int):
+        if value < -100 or value > 100:
+            value = 0
+        self._scale_delimiter_lines_x = value
+
+    @property
+    def scale_delimiter_lines_y(self) -> int:
+        value = self._scale_delimiter_lines_y
+        return value
+
+    @scale_delimiter_lines_y.setter
+    def scale_delimiter_lines_y(self, value: int):
+        if value < -100 or value > 100:
+            value = 0
+        self._scale_delimiter_lines_y = value
+
+    @property
+    def delimiter_line_color(self) -> str:
+        value = self._delimiter_line_color
+        return value
+
+    @delimiter_line_color.setter
+    def delimiter_line_color(self, value: str):
+        if not isinstance(value, str):
+            raise TypeError("Color value must be string in HEX format (#XXXXXX) or RGB(XXX,XXX,XXX)")
+
+        color = self._valid_color(value)
+        if color:
+            self._delimiter_line_color = color
+        else:
+            raise ValueError("Color must have a value in HEX format (#XXXXXX) or RGB(XXX,XXX,XXX)")
+
+    @property
+    def hint_animation_speed(self) -> int:
+        value = self._hint_animation_speed
+        return value
+
+    @hint_animation_speed.setter
+    def hint_animation_speed(self, value: int):
+        if not isinstance(value, int):
+            raise TypeError("Animation speed must be integer.")
+        if value < 0 or value > 10000:
+            raise ValueError("Animation speed value must be 0 - 10,000")
+        self._hint_animation_speed = value
+
+
+
+if __name__ == "__main__":
+    # Show configuration editor
+    import tkinter
+    from tkinter import Tk, Entry, Label, Button
+
+
+    class ConfigurationUtility():
+        def __init__(self, setting_class: Setting):
+            stt = setting_class
+            config_items = self.define_config_items()
+            # Window
+            root.title("Sudoku configuration dialog")
+            # root.geometry("1300x800")
+            root.configure(background="light grey")
+            # Widgets
+            name_label = []
+            value_entry = []
+            description_label = []
+            for item in config_items:
+                name = Label(root, text=item[0], background="light grey")
+                value = Entry(root)
+                value.insert(0, item[1])
+                description = Label(root, text=item[2], background="light grey", wraplength=800)
+                name_label.append(name)
+                value_entry.append(value)
+                description_label.append(description)
+            pad = 5
+            color = "black"
+            for i in range(0, len(name_label)):
+                if color == "black":
+                    color = "dark blue"
+                else:
+                    color = "black"
+                name_label[i].grid(row=i, column=0, sticky=tkinter.E+tkinter.N, pady=pad)
+                name_label[i].config(foreground=color)
+                value_entry[i].grid(row=i, column=1, sticky=tkinter.N, pady=pad)
+                value_entry[i].config(background="#00FFEE", foreground="dark blue")
+                description_label[i].grid(row=i, column=2, sticky=tkinter.W+tkinter.N, pady=pad)
+                description_label[i].config(foreground=color)
+            self.name_label = name_label
+            self.value_entry = value_entry
+            self.description_label = description_label
+            self.stt = stt
+            # Button SAVE
+            self.btn_ok = Button(root, text="Save", command=self.save_config)
+            self.btn_ok.grid(row=len(config_items), column=0, columnspan=3)
+            # Label for errors if any
+            self.lbl_error = Label(root, text="", background="light grey", foreground="dark red")
+            self.lbl_error.grid(row=(len(config_items) + 1), column=0, columnspan=3)
+
+        def save_config(self):
+            stt = self.stt
+            try:
+                value = self.value_entry[0].get()
+                value = value.strip(" ()[]{}")
+                size = value.split(",")
+                value = (int(size[0]), int(size[1]))
+                stt.win_size = value
+                stt.block_size = int(self.value_entry[1].get())
+                stt.game_size = int(self.value_entry[2].get())
+                stt.win_color = self.value_entry[3].get()
+                stt.language = int(self.value_entry[4].get())
+                stt.game_surface_zoom_level = int(self.value_entry[5].get())
+                stt.board_font_name = self.value_entry[6].get()
+                stt.board_font_color = self.value_entry[7].get()
+                stt.game_level = int(self.value_entry[8].get())
+                stt.level_points = int(self.value_entry[9].get())
+                stt.delimiter_line_thicknes = int(self.value_entry[10].get())
+                stt.scale_delimiter_lines_x = int(self.value_entry[11].get())
+                stt.scale_delimiter_lines_y = int(self.value_entry[12].get())
+                stt.delimiter_line_color = self.value_entry[13].get()
+                stt.hint_animation_speed = int(self.value_entry[14].get())
+            except Exception as e:
+                self.lbl_error["text"] = str(e)
+                return
+            stt.save_data_to_file()
+            root.quit()
+
+        def define_config_items(self) -> list:
+            # Config Items  [config_name, config_value, description]
+            config_items = [["_win_size", str(stt.win_size), "Minimum value is 50 pixels, recommended (800 x 800)"],
+                            ["_block size", str(stt.block_size), "Allowed values ​​(6, 9). Number of elements in one block, recommended 9."],
+                            ["_game_size", str(stt.game_size), "Allowed values ​​(6, 9). Number of blocks in the table, recommended 9."],
+                            ["_win_color", str(stt.win_color), "HEX value of game background color, default is black (#000000)."],
+                            ["_lang", str(stt.language), "Values ​​can be 0=English, 1=Serbian. Language used in the game."],
+                            ["_game_surface_zoom_level", str(stt.game_surface_zoom_level), "Values ​​(0 -5). Defines the display of the game board, 0=largest, 5=smallest."],
+                            ["_board_font_name", str(stt.board_font_name), "The font used to print the numbers in the game board."],
+                            ["_board_font_color", str(stt.board_font_color), "The HEX value of font color used to print the numbers in the game board."],
+                            ["_game_level", str(stt.game_level), "Values ​​(1 - 5). Player-chosen difficulty level."],
+                            ["_level_points", str(stt.level_points), "Values ​​(5 - 16). Scales the game level to determine the number of empty cells, this number will be multiplied by the game level and the obtained result is the percentage of empty cells. If the 'level points' is greater than 11, it will take a little longer to start a new game, and if after a certain number of attempts the game cannot find a solution, the game level will automatically decrease by 1. We strongly recommend that this number not exceed 12!!!"],
+                            ["_delimiter_line_thicknes", str(stt.delimiter_line_thicknes), "Values ​​(0 - 100). The thickness of the line that separates the blocks for better visibility. Select 0 if you do not want the line to be visible. Although the value can be set as high as 100, it is pointless to set a value higher than 10."],
+                            ["_scale_delimiter_lines_x", str(stt.scale_delimiter_lines_x), "Values ​​(-100 - 100). If for some reason you want to move the delimiter grid left or right, you can do so by changing this value."],
+                            ["_scale_delimiter_lines_y", str(stt.scale_delimiter_lines_y), "Values ​​(-100 - 100). If for some reason you want to move the delimiter grid up or down, you can do so by changing this value."],
+                            ["_delimiter_line_color", str(stt.delimiter_line_color), "HEX value of delimiter line color."],
+                            ["_hint_animation_speed", str(stt.hint_animation_speed), "Values ​​(0 - 10,000). It determines the speed of each step when the game moves through the cells in search of a solution. This only affects the animation the user sees when asking for help."]
+                            ]
+            return config_items
+
+    # Load settings
+    stt = Setting()
+    # Show GUI
+    root = Tk()
+    conf = ConfigurationUtility(stt)
+    root.mainloop()
 
