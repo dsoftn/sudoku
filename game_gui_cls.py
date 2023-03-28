@@ -76,6 +76,31 @@ class GameGUI():
         rect_title.x = 280
         rect_title.y = 25
         self._win.blit(img_title, rect_title)
+        # Draw board cell selection
+        img_set0 = pygame.image.load("images/set0/correct.png")
+        img_set0 = pygame.transform.scale(img_set0, (60, 60))
+        rect_set0 = img_set0.get_rect()
+        rect_set0.x = 20
+        rect_set0.y = 440
+        self._win.blit(img_set0, rect_set0)
+        img_set1 = pygame.image.load("images/set1/correct.png")
+        img_set1 = pygame.transform.scale(img_set1, (60, 60))
+        rect_set1 = img_set1.get_rect()
+        rect_set1.x = 20
+        rect_set1.y = 510
+        self._win.blit(img_set1, rect_set1)
+        img_set2 = pygame.image.load("images/set2/correct.png")
+        img_set2 = pygame.transform.scale(img_set2, (60, 60))
+        rect_set2 = img_set2.get_rect()
+        rect_set2.x = 20
+        rect_set2.y = 580
+        self._win.blit(img_set2, rect_set2)
+        img_set3 = pygame.image.load("images/set3/correct.png")
+        img_set3 = pygame.transform.scale(img_set3, (60, 60))
+        rect_set3 = img_set0.get_rect()
+        rect_set3.x = 20
+        rect_set3.y = 650
+        self._win.blit(img_set3, rect_set3)
         # Draw national flags for language change
         img_srbija = pygame.image.load("images/flag_serbia.png")
         img_srbija = pygame.transform.scale(img_srbija, (40, 20))
@@ -172,9 +197,20 @@ class GameGUI():
             # English flag clicked
             if x_mouse > 19 and x_mouse < 61 and y_mouse > 769 and y_mouse < 791:
                 self._stt.language = 0
+                pygame.display.set_caption(self._stt.lang("win_title"))
             # Serbian flag clicked
             if x_mouse > 69 and x_mouse < 111 and y_mouse > 769 and y_mouse < 791:
                 self._stt.language = 1
+                pygame.display.set_caption(self._stt.lang("win_title"))
+            # Change cell buttons clicked
+            if x_mouse > 19 and x_mouse < 81 and y_mouse > 439 and y_mouse < 501:
+                self._stt.buttons_image_folder = "images/set0/"
+            if x_mouse > 19 and x_mouse < 81 and y_mouse > 509 and y_mouse < 571:
+                self._stt.buttons_image_folder = "images/set1/"
+            if x_mouse > 19 and x_mouse < 81 and y_mouse > 579 and y_mouse < 641:
+                self._stt.buttons_image_folder = "images/set2/"
+            if x_mouse > 19 and x_mouse < 81 and y_mouse > 649 and y_mouse < 711:
+                self._stt.buttons_image_folder = "images/set3/"
 
         # Events for buttons
         self.btn_new_game.event_handler(event)
@@ -255,18 +291,19 @@ class GameGUI():
         win = self._win
         stt = self._stt
         # Load element image
+        png_folder = stt.buttons_image_folder
         img = None
-        img_normal = pygame.image.load("images/normal.png")
+        img_normal = pygame.image.load(png_folder + "normal.png")
         img_normal = pygame.transform.scale(img_normal, (stt.element_width ,stt.element_height))
-        img_empty = pygame.image.load("images/empty.png")
+        img_empty = pygame.image.load(png_folder + "empty.png")
         img_empty = pygame.transform.scale(img_empty, (stt.element_width ,stt.element_height))
-        img_correct = pygame.image.load("images/correct.png")
+        img_correct = pygame.image.load(png_folder + "correct.png")
         img_correct = pygame.transform.scale(img_correct, (stt.element_width ,stt.element_height))
-        img_wrong = pygame.image.load("images/wrong.png")
+        img_wrong = pygame.image.load(png_folder + "wrong.png")
         img_wrong = pygame.transform.scale(img_wrong, (stt.element_width ,stt.element_height))
-        img_selection = pygame.image.load("images/selection.png")
+        img_selection = pygame.image.load(png_folder + "selection.png")
         img_selection = pygame.transform.scale(img_selection, (stt.element_width ,stt.element_height))
-        img_selection_predefined = pygame.image.load("images/selection_predefined.png")
+        img_selection_predefined = pygame.image.load(png_folder + "selection_predefined.png")
         img_selection_predefined = pygame.transform.scale(img_selection_predefined, (stt.element_width ,stt.element_height))
         rect = img_normal.get_rect()
         # Get table from logic
@@ -308,7 +345,7 @@ class GameGUI():
                     rect_y = stt.board_surface_pos_y + stt.element_height * y  + stt.element_height / 7
                     rect_w = stt.element_width * 5 / 7
                     rect_h = stt.element_height * 5 / 7
-                    pygame.draw.rect(win, "#000000", pygame.Rect((rect_x, rect_y, rect_w, rect_h)), 2)
+                    pygame.draw.rect(win, stt._selection_rectangle_color, pygame.Rect((rect_x, rect_y, rect_w, rect_h)), stt._selection_rectangle_thicknes)
 
         # Draw block delimiter lines
         # Define scale if the line should be moved slightly

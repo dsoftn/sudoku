@@ -1,3 +1,6 @@
+import os
+
+
 class Setting():
     """Loads the game settings from the 'settings.txt' file.
     """
@@ -33,6 +36,9 @@ class Setting():
         self._scale_delimiter_lines_y = 0  # Moves lines that delimits blocks by value
         self._delimiter_line_color = "#00ff00"  # Color of lines that delimit blocks
         self._hint_animation_speed = 150  # Hint animation speed in miliseconds
+        self._buttons_image_folder = "images/set0/"  # Image folder with button png files
+        self._selection_rectangle_thicknes = 2  # Thicknes of rectangle on selected cell
+        self._selection_rectangle_color = "#000000"  # Color of rectangle on selected cell
         # Try to load the data, if the file does not exist, load the default data.
         result = self.load_data_from_file()
         if not result:
@@ -65,7 +71,16 @@ class Setting():
             return True
         except FileNotFoundError:
             return False
-    
+
+    def is_valid_image_folder(self, value: str) -> bool:
+        files = ["correct.png", "empty.png", "normal.png", "selection.png", "selection_predefined.png", "wrong.png"]
+        result = True
+        for file in files:
+            if not os.path.isfile(value + file):
+                result = False
+                break
+        return result
+
     def save_data_to_file(self, write_default_data: bool = False) -> str:
         """Saves setting to 'settings.txt' file.
         """
@@ -87,6 +102,9 @@ class Setting():
             data += f"_scale_delimiter_lines_y={self._scale_delimiter_lines_y}\n"
             data += f"_delimiter_line_color={self._delimiter_line_color}\n"
             data += f"_hint_animation_speed={self._hint_animation_speed}\n"
+            data += f"_buttons_image_folder={self._buttons_image_folder}\n"
+            data += f"_selection_rectangle_thicknes={self._selection_rectangle_thicknes}\n"
+            data += f"_selection_rectangle_color={self._selection_rectangle_color}\n"
 
         # Load to lines_to_write all language records from settings.txt
         lines_to_write = ""
@@ -348,6 +366,45 @@ class Setting():
                     self._hint_animation_speed = int(_hint_animation_speed)
         else:
             missing = missing + ":_hint_animation_speed"
+        # Setup _buttons_image_folder
+        index_list = [idx for idx, value in enumerate(data) if value[0] == "_buttons_image_folder"]
+        if index_list:
+            index = index_list[0]
+            _buttons_image_folder = data[index][1].strip()
+            if _buttons_image_folder:
+                if self.is_valid_image_folder(_buttons_image_folder):
+                    self._buttons_image_folder = _buttons_image_folder
+                else:
+                    missing = missing + "_buttons_image_folder"    
+            else:
+                missing = missing + "_buttons_image_folder"
+        else:
+            missing = missing + "_buttons_image_folder"
+        # Setup _selection_rectangle_thicknes
+        index_list = [idx for idx, value in enumerate(data) if value[0] == "_selection_rectangle_thicknes"]
+        if index_list:
+            index = index_list[0]
+            _selection_rectangle_thicknes = data[index][1]
+            if not _selection_rectangle_thicknes.isdigit():
+                missing = missing + ":_selection_rectangle_thicknes"
+            else:
+                if int(_selection_rectangle_thicknes) < 0 or int(_selection_rectangle_thicknes) > 30:
+                    missing = missing +":_selection_rectangle_thicknes"
+                else:
+                    self._selection_rectangle_thicknes = int(_selection_rectangle_thicknes)
+        else:
+            missing = missing + ":_selection_rectangle_thicknes"
+        # Setup _selection_rectangle_color
+        index_list = [idx for idx, value in enumerate(data) if value[0] == "_selection_rectangle_color"]
+        if index_list:
+            index = index_list[0]
+            _selection_rectangle_color = self._valid_color(data[index][1])
+            if _selection_rectangle_color:
+                self._selection_rectangle_color = _selection_rectangle_color
+            else:
+                missing = missing + ":_selection_rectangle_color"
+        else:
+            missing = missing + ":_selection_rectangle_color"
 
 
         if missing:
@@ -775,6 +832,48 @@ class Setting():
             raise ValueError("Animation speed value must be 0 - 10,000")
         self._hint_animation_speed = value
 
+    @property
+    def buttons_image_folder(self) -> str:
+        value = self._buttons_image_folder
+        return value
+
+    @buttons_image_folder.setter
+    def buttons_image_folder(self, value: str):
+        result = self.is_valid_image_folder(value)
+        if result:
+            self._buttons_image_folder = value
+        else:
+            raise ValueError("Image folder does not conatains all needed png files.")
+
+    @property
+    def selection_rectangle_thicknes(self) -> int:
+        value = self._selection_rectangle_thicknes
+        return value
+
+    @selection_rectangle_thicknes.setter
+    def selection_rectangle_thicknes(self, value: int):
+        if not isinstance(value, int):
+            raise TypeError("Selection rectangle thicknes value must be integer.")
+        if value < 0 or value > 30:
+            raise ValueError("Selection rectangle thicknes value must be 0 - 30")
+        self._selection_rectangle_thicknes = value
+
+    @property
+    def selection_rectangle_color(self) -> str:
+        value = self._selection_rectangle_color
+        return value
+
+    @selection_rectangle_color.setter
+    def selection_rectangle_color(self, value: str):
+        if not isinstance(value, str):
+            raise TypeError("Color value must be string in HEX format (#XXXXXX) or RGB(XXX,XXX,XXX)")
+
+        color = self._valid_color(value)
+        if color:
+            self._selection_rectangle_color = color
+        else:
+            raise ValueError("Color must have a value in HEX format (#XXXXXX) or RGB(XXX,XXX,XXX)")
+
 
 
 if __name__ == "__main__":
@@ -803,7 +902,7 @@ if __name__ == "__main__":
                 name_label.append(name)
                 value_entry.append(value)
                 description_label.append(description)
-            pad = 5
+            pad = 3
             color = "black"
             for i in range(0, len(name_label)):
                 if color == "black":
@@ -821,7 +920,7 @@ if __name__ == "__main__":
             self.description_label = description_label
             self.stt = stt
             # Button SAVE
-            self.btn_ok = Button(root, text="Save", command=self.save_config)
+            self.btn_ok = Button(root, text=">>>   Save   <<<", command=self.save_config)
             self.btn_ok.grid(row=len(config_items), column=0, columnspan=3)
             # Label for errors if any
             self.lbl_error = Label(root, text="", background="light grey", foreground="dark red")
@@ -849,6 +948,9 @@ if __name__ == "__main__":
                 stt.scale_delimiter_lines_y = int(self.value_entry[12].get())
                 stt.delimiter_line_color = self.value_entry[13].get()
                 stt.hint_animation_speed = int(self.value_entry[14].get())
+                stt.buttons_image_folder = self.value_entry[15].get()
+                stt.selection_rectangle_thicknes = int(self.value_entry[16].get())
+                stt.selection_rectangle_color = self.value_entry[17].get()
             except Exception as e:
                 self.lbl_error["text"] = str(e)
                 return
@@ -871,7 +973,10 @@ if __name__ == "__main__":
                             ["_scale_delimiter_lines_x", str(stt.scale_delimiter_lines_x), "Values ​​(-100 - 100). If for some reason you want to move the delimiter grid left or right, you can do so by changing this value."],
                             ["_scale_delimiter_lines_y", str(stt.scale_delimiter_lines_y), "Values ​​(-100 - 100). If for some reason you want to move the delimiter grid up or down, you can do so by changing this value."],
                             ["_delimiter_line_color", str(stt.delimiter_line_color), "HEX value of delimiter line color."],
-                            ["_hint_animation_speed", str(stt.hint_animation_speed), "Values ​​(0 - 10,000). It determines the speed of each step when the game moves through the cells in search of a solution. This only affects the animation the user sees when asking for help."]
+                            ["_hint_animation_speed", str(stt.hint_animation_speed), "Values ​​(0 - 10,000). It determines the speed of each step when the game moves through the cells in search of a solution. This only affects the animation the user sees when asking for help."],
+                            ["_buttons_image_folder", str(stt.buttons_image_folder), "A folder containing png files for displaying fields in Sudoku. (/image/set0/)"],
+                            ["_selection_rectangle_thicknes", str(stt.selection_rectangle_thicknes), "Values (0 - 30). The thickness of the square that marks the cell selection."],
+                            ["_selection_rectangle_color", str(stt.selection_rectangle_color), "The color of the square that marks the cell selection."]
                             ]
             return config_items
 
