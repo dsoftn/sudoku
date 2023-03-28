@@ -176,24 +176,31 @@ class GameGUI():
         mouse_pos = pygame.mouse.get_pos()
         x_mouse = mouse_pos[0]
         y_mouse = mouse_pos[1]
-    
         if event.type == pygame.MOUSEBUTTONDOWN:
             # Change selected cell
             if x_mouse > self._stt.board_surface_pos_x and x_mouse < self._stt.board_surface_pos_x + self._stt.board_surface_width:
                 if y_mouse > self._stt.board_surface_pos_y and y_mouse < self._stt.board_surface_pos_y + self._stt.board_surface_height:
-                    x_mouse = x_mouse - self._stt.board_surface_pos_x
-                    y_mouse = y_mouse - self._stt.board_surface_pos_y
-                    self._stt.selection_x = int(x_mouse / self._stt.element_width)
-                    self._stt.selection_y = int(y_mouse / self._stt.element_height)
+                    x_mouse_cell = x_mouse - self._stt.board_surface_pos_x
+                    y_mouse_cell = y_mouse - self._stt.board_surface_pos_y
+                    self._stt.selection_x = int(x_mouse_cell / self._stt.element_width)
+                    self._stt.selection_y = int(y_mouse_cell / self._stt.element_height)
             # Zoom clicked
             if x_mouse > 739 and x_mouse < 791 and y_mouse > 149 and y_mouse < 191:
                 self._stt.game_surface_zoom_level += 1
             # Level UP clicked
             if x_mouse > 719 and x_mouse < 781 and y_mouse > 329 and y_mouse < 391:
+                old_level = self._stt.game_level
                 self._stt.game_level += 1
+                if old_level != self._stt.game_level:
+                    self.start_new_game()
+                    self._sudoku_solved = False
             # Level DOWN clicked
             if x_mouse > 719 and x_mouse < 781 and y_mouse > 529 and y_mouse < 591:
+                old_level = self._stt.game_level
                 self._stt.game_level -= 1
+                if old_level != self._stt.game_level:
+                    self.start_new_game()
+                    self._sudoku_solved = False
             # English flag clicked
             if x_mouse > 19 and x_mouse < 61 and y_mouse > 769 and y_mouse < 791:
                 self._stt.language = 0
@@ -211,7 +218,6 @@ class GameGUI():
                 self._stt.buttons_image_folder = "images/set2/"
             if x_mouse > 19 and x_mouse < 81 and y_mouse > 649 and y_mouse < 711:
                 self._stt.buttons_image_folder = "images/set3/"
-
         # Events for buttons
         self.btn_new_game.event_handler(event)
         self.btn_size6x6.event_handler(event)
@@ -220,9 +226,23 @@ class GameGUI():
         if self._show_correct:
             self.btn_help.event_handler(event)
                 
-
-
     def key_event_handler(self, keys):
+        keys = pygame.key.get_pressed()
+        self._show_correct = False
+        # Arrow key pressed
+        if keys[pygame.K_UP]:
+            self._stt.selection_y -= 1
+        elif keys[pygame.K_DOWN]:
+            self._stt.selection_y += 1
+        elif keys[pygame.K_LEFT]:
+            self._stt.selection_x -= 1
+        elif keys[pygame.K_RIGHT]:
+            self._stt.selection_x += 1
+        elif keys[pygame.K_PAGEUP]:
+            self._stt.game_surface_zoom_level += 1
+        elif keys[pygame.K_PAGEDOWN]:
+            self._stt.game_surface_zoom_level -= 1
+        # Number pressed
         if keys[pygame.K_0] or keys[pygame.K_DELETE] or keys[pygame.K_KP_0]:
             self._logic.set_cell_val(self._stt.selection_x, self._stt.selection_y, 0)
             self._sudoku_solved = self._logic.check_sudoku_is_user_solved()
@@ -253,7 +273,8 @@ class GameGUI():
         elif keys[pygame.K_9] or keys[pygame.K_KP_9]:
             self._logic.set_cell_val(self._stt.selection_x, self._stt.selection_y, 9)
             self._sudoku_solved = self._logic.check_sudoku_is_user_solved()
-        elif keys[pygame.K_SPACE]:
+        # Spacebar pressed
+        if keys[pygame.K_SPACE]:
             self._logic.analyze_user_input()
             self._show_correct = True
     
@@ -270,15 +291,17 @@ class GameGUI():
         # Go to cell
         while stt.selection_x != cell_x or stt.selection_y != cell_y:
             pygame.time.wait(wait_ms)
-            if stt.selection_x < cell_x:
-                stt.selection_x += 1
-            elif stt.selection_x > cell_x:
-                stt.selection_x -= 1
-            elif stt.selection_y < cell_y:
-                stt.selection_y += 1
-            elif stt.selection_y > cell_y:
-                stt.selection_y -= 1
-            self.show_table()
+            if abs(cell_x - stt.selection_x) > abs(cell_y - stt.selection_y):
+                if stt.selection_x < cell_x:
+                    stt.selection_x += 1
+                elif stt.selection_x > cell_x:
+                    stt.selection_x -= 1
+            else:
+                if stt.selection_y < cell_y:
+                    stt.selection_y += 1
+                elif stt.selection_y > cell_y:
+                    stt.selection_y -= 1
+            self.show_table(show_correct=True)
             self.show_sudoku()
             self.draw_gui()
             pygame.display.flip()
@@ -346,7 +369,6 @@ class GameGUI():
                     rect_w = stt.element_width * 5 / 7
                     rect_h = stt.element_height * 5 / 7
                     pygame.draw.rect(win, stt._selection_rectangle_color, pygame.Rect((rect_x, rect_y, rect_w, rect_h)), stt._selection_rectangle_thicknes)
-
         # Draw block delimiter lines
         # Define scale if the line should be moved slightly
         scale_x = stt.scale_delimiter_lines_x
@@ -385,8 +407,6 @@ class GameGUI():
                     pos_x = element_pos_x + (stt.element_width - self._font_width) / 2
                     pos_y = element_pos_y + (stt.element_height - self._font_height) / 2
                     win.blit(text, (pos_x, pos_y))
-
-
 
     def _find_font_size_for_board(self) -> int:
         max_height = int(self._stt.element_height * 2 / 3)
