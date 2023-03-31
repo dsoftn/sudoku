@@ -59,3 +59,9 @@ if stt.save_data_to_file() != "":
 pygame.quit
 
 
+"""
+DsoftN (dsoftn@gmail.com)
+Danijel Nisevic
+29.03.2023.
+"""
+

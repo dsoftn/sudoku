@@ -874,6 +874,16 @@ class Setting():
         else:
             raise ValueError("Color must have a value in HEX format (#XXXXXX) or RGB(XXX,XXX,XXX)")
 
+    @property
+    def win_scale_x(self) -> float:
+        value = self.win_size[0] / 800
+        return value
+
+    @property
+    def win_scale_y(self) -> float:
+        value = self.win_size[1] / 800
+        return value
+
 
 
 if __name__ == "__main__":
@@ -959,7 +969,7 @@ if __name__ == "__main__":
 
         def define_config_items(self) -> list:
             # Config Items  [config_name, config_value, description]
-            config_items = [["_win_size", str(stt.win_size), "Minimum value is 50 pixels, recommended (800 x 800)"],
+            config_items = [["_win_size", str(stt.win_size), "Minimum value is 50 pixels, recommended (800 x 800). Please leave this value at 800x800. The code is not intended to work with other values, anything less than 800 may cause an error."],
                             ["_block size", str(stt.block_size), "Allowed values ​​(6, 9). Number of elements in one block, recommended 9."],
                             ["_game_size", str(stt.game_size), "Allowed values ​​(6, 9). Number of blocks in the table, recommended 9."],
                             ["_win_color", str(stt.win_color), "HEX value of game background color, default is black (#000000)."],

@@ -35,7 +35,7 @@ class SudokuGameLogic():
             self._empty_user_cells()
             is_solved = self._solve_sudoku()
             count_try += 1
-            if count_try % 30 == 0:
+            if count_try % 50 == 0:
                 self._stt.game_level -= 1
 
     def _restore_table_to_created(self):

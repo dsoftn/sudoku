@@ -19,11 +19,11 @@ class GameGUI():
         pygame.font.init()
         self._stt.board_font_size, self._font_width, self._font_height = self._find_font_size_for_board()
         # Define buttons
-        self.btn_size9x9 = pygameButton.Button(self._win, (720, 30), 70, 40, "9x9", font_size=28)
-        self.btn_size6x6 = pygameButton.Button(self._win, (640, 30), 70, 40, "6x6", font_size=28)
-        self.btn_new_game = pygameButton.Button(self._win, (10, 30), 200, 50, self._stt.lang("new_game"), font_size=46, bg_color="green")
-        self.btn_check_sudoku = pygameButton.Button(self._win, (300, 755), 200, 40, self._stt.lang("check_sudoku"), font_size=36, bg_color="green")
-        self.btn_help = pygameButton.Button(self._win, (505, 755), 290, 40, self._stt.lang("hint"), font_size=28, bg_color="#FF0000", fg_color="#000066")
+        self.btn_size9x9 = pygameButton.Button(self._win, (int(720 * self._stt.win_scale_x), int(30 * self._stt.win_scale_y)), int(70 * self._stt.win_scale_x), int(40 * self._stt.win_scale_y), "9x9", font_size=int(28 * self._stt.win_scale_x))
+        self.btn_size6x6 = pygameButton.Button(self._win, (int(640 * self._stt.win_scale_x), int(30 * self._stt.win_scale_y)), int(70 * self._stt.win_scale_x), int(40 * self._stt.win_scale_y), "6x6", font_size=int(28 * self._stt.win_scale_x))
+        self.btn_new_game = pygameButton.Button(self._win, (int(10 * self._stt.win_scale_x), int(30 * self._stt.win_scale_y)), int(200 * self._stt.win_scale_x), int(50 * self._stt.win_scale_y), self._stt.lang("new_game"), font_size=int(46 * self._stt.win_scale_x), bg_color="green")
+        self.btn_check_sudoku = pygameButton.Button(self._win, (int(300 * self._stt.win_scale_x), int(755 * self._stt.win_scale_y)), int(200 * self._stt.win_scale_x), int(40 * self._stt.win_scale_y), self._stt.lang("check_sudoku"), font_size=int(36 * self._stt.win_scale_x), bg_color="green")
+        self.btn_help = pygameButton.Button(self._win, (int(505 * self._stt.win_scale_x), int(755 * self._stt.win_scale_y)), int(290 * self._stt.win_scale_x), int(40 * self._stt.win_scale_y), self._stt.lang("hint"), font_size=int(28 * self._stt.win_scale_x), bg_color="#FF0000", fg_color="#000066")
 
     def update_gui(self):
         # Find font size
@@ -73,53 +73,53 @@ class GameGUI():
         img_title = pygame.image.load("images/title.png")
         img_title = pygame.transform.scale(img_title, (240, 70))
         rect_title = img_title.get_rect()
-        rect_title.x = 280
-        rect_title.y = 25
+        rect_title.x = int(280 * self._stt.win_scale_x)
+        rect_title.y = int(25 * self._stt.win_scale_y)
         self._win.blit(img_title, rect_title)
         # Draw board cell selection
         img_set0 = pygame.image.load("images/set0/correct.png")
         img_set0 = pygame.transform.scale(img_set0, (60, 60))
         rect_set0 = img_set0.get_rect()
-        rect_set0.x = 20
-        rect_set0.y = 440
+        rect_set0.x = int(20 * self._stt.win_scale_x)
+        rect_set0.y = int(440 * self._stt.win_scale_y)
         self._win.blit(img_set0, rect_set0)
         img_set1 = pygame.image.load("images/set1/correct.png")
         img_set1 = pygame.transform.scale(img_set1, (60, 60))
         rect_set1 = img_set1.get_rect()
-        rect_set1.x = 20
-        rect_set1.y = 510
+        rect_set1.x = int(20 * self._stt.win_scale_x)
+        rect_set1.y = int(510 * self._stt.win_scale_y)
         self._win.blit(img_set1, rect_set1)
         img_set2 = pygame.image.load("images/set2/correct.png")
         img_set2 = pygame.transform.scale(img_set2, (60, 60))
         rect_set2 = img_set2.get_rect()
-        rect_set2.x = 20
-        rect_set2.y = 580
+        rect_set2.x = int(20 * self._stt.win_scale_x)
+        rect_set2.y = int(580 * self._stt.win_scale_y)
         self._win.blit(img_set2, rect_set2)
         img_set3 = pygame.image.load("images/set3/correct.png")
         img_set3 = pygame.transform.scale(img_set3, (60, 60))
         rect_set3 = img_set0.get_rect()
-        rect_set3.x = 20
-        rect_set3.y = 650
+        rect_set3.x = int(20 * self._stt.win_scale_x)
+        rect_set3.y = int(650 * self._stt.win_scale_y)
         self._win.blit(img_set3, rect_set3)
         # Draw national flags for language change
         img_srbija = pygame.image.load("images/flag_serbia.png")
         img_srbija = pygame.transform.scale(img_srbija, (40, 20))
         rect_srbija = img_srbija.get_rect()
         rect_srbija.x = 70
-        rect_srbija.y = 770
+        rect_srbija.y = int(770 * self._stt.win_scale_y)
         self._win.blit(img_srbija, rect_srbija)
         img_uk = pygame.image.load("images/flag_uk.png")
         img_uk = pygame.transform.scale(img_uk, (40, 20))
         rect_uk = img_uk.get_rect()
         rect_uk.x = 20
-        rect_uk.y = 770
+        rect_uk.y = int(770 * self._stt.win_scale_y)
         self._win.blit(img_uk, rect_uk)
         # Zoom out button
         img_zoom_out = pygame.image.load("images/zoom_out.png")
         img_zoom_out = pygame.transform.scale(img_zoom_out, (50, 50))
         rect_zoom_out = img_zoom_out.get_rect()
-        rect_zoom_out.x = 740
-        rect_zoom_out.y = 150
+        rect_zoom_out.x = int(740 * self._stt.win_scale_x)
+        rect_zoom_out.y = int(150 * self._stt.win_scale_y)
         self._win.blit(img_zoom_out, rect_zoom_out)
         # Buttons
         self.btn_new_game.draw_button()
@@ -134,7 +134,7 @@ class GameGUI():
         # Level
         font = pygame.font.SysFont("Comic Sans MS", 40)
         text = font.render(self._stt.lang("level_msg"), 1, "blue")
-        self._win.blit(text, (710, 400))
+        self._win.blit(text, (int(710 * self._stt.win_scale_x), int(400 * self._stt.win_scale_y)))
         font = pygame.font.SysFont("Comic Sans MS", 60)
         if self._stt.game_level == 1:
             color = "green"
@@ -147,29 +147,29 @@ class GameGUI():
         elif self._stt.game_level == 5:
             color = "red"
         text = font.render(str(self._stt.game_level), 1, color)
-        self._win.blit(text, (735, 440))
+        self._win.blit(text, (int(735 * self._stt.win_scale_x), int(440 * self._stt.win_scale_y)))
         img_level_up = pygame.image.load("images/level_up.png")
         img_level_up = pygame.transform.scale(img_level_up, (60, 60))
         rect_level_up = img_zoom_out.get_rect()
-        rect_level_up.x = 720
-        rect_level_up.y = 330
+        rect_level_up.x = int(720 * self._stt.win_scale_x)
+        rect_level_up.y = int(330 * self._stt.win_scale_y)
         self._win.blit(img_level_up, rect_level_up)
         img_level_down = pygame.image.load("images/level_down.png")
         img_level_down = pygame.transform.scale(img_level_down, (60, 60))
         rect_level_down = img_zoom_out.get_rect()
-        rect_level_down.x = 720
-        rect_level_down.y = 530
+        rect_level_down.x = int(720 * self._stt.win_scale_x)
+        rect_level_down.y = int(530 * self._stt.win_scale_y)
         self._win.blit(img_level_down, rect_level_down)
         # If user is solved sudoku 
         if self._sudoku_solved:
             font = pygame.font.SysFont("Comic Sans MS", 40)
             text = font.render(self._stt.lang("user_solved_msg"), 1, "light green")
-            self._win.blit(text, (100, 95))
+            self._win.blit(text, (int(100 * self._stt.win_scale_x), int(95 * self._stt.win_scale_y)))
             img_end = pygame.image.load("images/end.png")
             img_end = pygame.transform.scale(img_end, (100, 200))
             rect_end = img_title.get_rect()
-            rect_end.x = 5
-            rect_end.y = 250
+            rect_end.x = int(5 * self._stt.win_scale_x)
+            rect_end.y = int(250 * self._stt.win_scale_y)
             self._win.blit(img_end, rect_end)
 
     def mouse_event_handler(self, event):
@@ -185,38 +185,38 @@ class GameGUI():
                     self._stt.selection_x = int(x_mouse_cell / self._stt.element_width)
                     self._stt.selection_y = int(y_mouse_cell / self._stt.element_height)
             # Zoom clicked
-            if x_mouse > 739 and x_mouse < 791 and y_mouse > 149 and y_mouse < 191:
+            if x_mouse > int(739 * self._stt.win_scale_x) and x_mouse < int(791 * self._stt.win_scale_x) and y_mouse > int(149 * self._stt.win_scale_y) and y_mouse < int(191 * self._stt.win_scale_y):
                 self._stt.game_surface_zoom_level += 1
             # Level UP clicked
-            if x_mouse > 719 and x_mouse < 781 and y_mouse > 329 and y_mouse < 391:
+            if x_mouse > int(719 * self._stt.win_scale_x) and x_mouse < int(781 * self._stt.win_scale_x) and y_mouse > int(329 * self._stt.win_scale_y) and y_mouse < int(391 * self._stt.win_scale_y):
                 old_level = self._stt.game_level
                 self._stt.game_level += 1
                 if old_level != self._stt.game_level:
                     self.start_new_game()
                     self._sudoku_solved = False
             # Level DOWN clicked
-            if x_mouse > 719 and x_mouse < 781 and y_mouse > 529 and y_mouse < 591:
+            if x_mouse > int(719 * self._stt.win_scale_x) and x_mouse < int(781 * self._stt.win_scale_x) and y_mouse > int(529 * self._stt.win_scale_y) and y_mouse < int(591 * self._stt.win_scale_y):
                 old_level = self._stt.game_level
                 self._stt.game_level -= 1
                 if old_level != self._stt.game_level:
                     self.start_new_game()
                     self._sudoku_solved = False
             # English flag clicked
-            if x_mouse > 19 and x_mouse < 61 and y_mouse > 769 and y_mouse < 791:
+            if x_mouse > int(19 * self._stt.win_scale_x) and x_mouse < int(61 * self._stt.win_scale_x) and y_mouse > int(769 * self._stt.win_scale_y) and y_mouse < int(791 * self._stt.win_scale_y):
                 self._stt.language = 0
                 pygame.display.set_caption(self._stt.lang("win_title"))
             # Serbian flag clicked
-            if x_mouse > 69 and x_mouse < 111 and y_mouse > 769 and y_mouse < 791:
+            if x_mouse > int(69 * self._stt.win_scale_x) and x_mouse < int(111 * self._stt.win_scale_x) and y_mouse > int(769 * self._stt.win_scale_y) and y_mouse < int(791 * self._stt.win_scale_y):
                 self._stt.language = 1
                 pygame.display.set_caption(self._stt.lang("win_title"))
             # Change cell buttons clicked
-            if x_mouse > 19 and x_mouse < 81 and y_mouse > 439 and y_mouse < 501:
+            if x_mouse > int(19 * self._stt.win_scale_x) and x_mouse < int(81 * self._stt.win_scale_x) and y_mouse > int(439 * self._stt.win_scale_y) and y_mouse < int(501 * self._stt.win_scale_y):
                 self._stt.buttons_image_folder = "images/set0/"
-            if x_mouse > 19 and x_mouse < 81 and y_mouse > 509 and y_mouse < 571:
+            if x_mouse > int(19 * self._stt.win_scale_x) and x_mouse < int(81 * self._stt.win_scale_x) and y_mouse > int(509 * self._stt.win_scale_y) and y_mouse < int(571 * self._stt.win_scale_y):
                 self._stt.buttons_image_folder = "images/set1/"
-            if x_mouse > 19 and x_mouse < 81 and y_mouse > 579 and y_mouse < 641:
+            if x_mouse > int(19 * self._stt.win_scale_x) and x_mouse < int(81 * self._stt.win_scale_x) and y_mouse > int(579 * self._stt.win_scale_y) and y_mouse < int(641 * self._stt.win_scale_y):
                 self._stt.buttons_image_folder = "images/set2/"
-            if x_mouse > 19 and x_mouse < 81 and y_mouse > 649 and y_mouse < 711:
+            if x_mouse > int(19 * self._stt.win_scale_x) and x_mouse < int(81 * self._stt.win_scale_x) and y_mouse > int(649 * self._stt.win_scale_y) and y_mouse < int(711 * self._stt.win_scale_y):
                 self._stt.buttons_image_folder = "images/set3/"
         # Events for buttons
         self.btn_new_game.event_handler(event)
